@@ -363,43 +363,109 @@ export function getLocalizedRouteName(routeName: string, lang: string): string {
 }
 
 /**
- * Converts numbers to spoken number words in Malayalam & Hindi if desired, or formatted string
+ * Converts numbers to spoken words in Malayalam, Hindi, and English
  */
-const numberWords: Record<string, Record<number, string>> = {
-    ml: {
-        5: 'അഞ്ച്', 6: 'ആറ്', 7: 'ഏഴ്', 8: 'എട്ട്', 9: 'ഒൻപത്',
-        10: 'പത്ത്', 11: 'പതിനൊന്ന്', 12: 'പന്ത്രണ്ട്', 13: 'പതിമൂന്ന്', 14: 'പതിനാല്',
-        15: 'പതിനഞ്ച്', 16: 'പതിനാറ്', 17: 'പതിനേഴ്', 18: 'പതിനെട്ട്', 19: 'പത്തൊൻപത്',
-        20: 'ഇരുപത്', 21: 'ഇരുപത്തിയൊന്ന്', 22: 'ഇരുപത്തിരണ്ട്', 23: 'ഇരുപത്തിമൂന്ന്', 24: 'ഇരുപത്തിനാല്',
-        25: 'ഇരുപത്തിയഞ്ച്', 26: 'ഇരുപത്തിയാറ്', 27: 'ഇരുപത്തിയേഴ്', 28: 'ഇരുപത്തിയെട്ട്', 29: 'ഇരുപത്തിയൊൻപത്',
-        30: 'മുപ്പത്', 35: 'മുപ്പത്തിയഞ്ച്', 40: 'നാല്പത്', 45: 'നാല്പത്തിയഞ്ച്', 50: 'അമ്പത്'
-    },
-    hi: {
-        5: 'पांच', 6: 'छह', 7: 'सात', 8: 'आठ', 9: 'नौ',
-        10: 'दस', 11: 'ग्यारह', 12: 'बारह', 13: 'तेरह', 14: 'चौदह',
-        15: 'पंद्रह', 16: 'सोलह', 17: 'सत्रह', 18: 'अठारह', 19: 'उन्नीस',
-        20: 'बीस', 21: 'इक्कीस', 22: 'बाईस', 23: 'तेईस', 24: 'चौबीस',
-        25: 'पच्चीस', 26: 'छब्बीस', 27: 'सत्ताईस', 28: 'अट्ठाईस', 29: 'उनतीस',
-        30: 'तीस', 35: 'पैंतीस', 40: 'चालीस', 45: 'पैंतालीस', 50: 'पचास'
-    },
-    en: {
-        5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine',
-        10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
-        15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen', 19: 'nineteen',
-        20: 'twenty', 21: 'twenty-one', 22: 'twenty-two', 23: 'twenty-three', 24: 'twenty-four',
-        25: 'twenty-five', 26: 'twenty-six', 27: 'twenty-seven', 28: 'twenty-eight', 29: 'twenty-nine',
-        30: 'thirty', 35: 'thirty-five', 40: 'forty', 45: 'forty-five', 50: 'fifty'
-    }
-};
+export function numberToMalayalamWords(num: number): string {
+    const ones: Record<number, string> = {
+        0: 'പൂജ്യം', 1: 'ഒന്ന്', 2: 'രണ്ട്', 3: 'മൂന്ന്', 4: 'നാല്', 5: 'അഞ്ച്',
+        6: 'ആറ്', 7: 'ഏഴ്', 8: 'എട്ട്', 9: 'ഒൻപത്', 10: 'പത്ത്',
+        11: 'പതിനൊന്ന്', 12: 'പന്ത്രണ്ട്', 13: 'പതിമൂന്ന്', 14: 'പതിനാല്', 15: 'പതിനഞ്ച്',
+        16: 'പതിനാറ്', 17: 'പതിനേഴ്', 18: 'പതിനെട്ട്', 19: 'പത്തൊൻപത്'
+    };
+    if (ones[num]) return ones[num];
 
-const numberWordsPhonetic: Record<number, string> = {
-    5: 'anchu', 6: 'aaru', 7: 'yezhu', 8: 'ettu', 9: 'onpathu',
-    10: 'pathu', 11: 'pathinonnu', 12: 'panthrandu', 13: 'pathimoonnu', 14: 'pathinaalu',
-    15: 'pathinanchu', 16: 'pathinaaru', 17: 'pathinyezhu', 18: 'pathinettu', 19: 'pathonpathu',
-    20: 'irupathu', 21: 'irupathi onnu', 22: 'irupathi randu', 23: 'irupathi moonnu', 24: 'irupathi naalu',
-    25: 'irupathianchu', 26: 'irupathi aaru', 27: 'irupathi yezhu', 28: 'irupathi yettu', 29: 'irupathi onpathu',
-    30: 'muppathu', 35: 'muppathianchu', 40: 'nalpathu', 45: 'nalpathianchu', 50: 'ambathu'
-};
+    const tens: Record<number, string> = {
+        20: 'ഇരുപത്', 30: 'മുപ്പത്', 40: 'നാൽപ്പത്', 50: 'അമ്പത്',
+        60: 'അറുപത്', 70: 'എഴുപത്', 80: 'എൺപത്', 90: 'തൊണ്ണൂറ്', 100: 'നൂറ്'
+    };
+    if (tens[num]) return tens[num];
+
+    if (num > 20 && num < 30) return `ഇരുപത്തി${ones[num - 20]}`;
+    if (num > 30 && num < 40) return `മുപ്പത്തി${ones[num - 30]}`;
+    if (num > 40 && num < 50) return `നാൽപ്പത്തി${ones[num - 40]}`;
+    if (num > 50 && num < 60) return `അമ്പത്തി${ones[num - 50]}`;
+    if (num > 60 && num < 70) return `അറുപത്തി${ones[num - 60]}`;
+    if (num > 70 && num < 80) return `എഴുപത്തി${ones[num - 70]}`;
+    if (num > 80 && num < 90) return `എൺപത്തി${ones[num - 80]}`;
+    if (num > 90 && num < 100) return `തൊണ്ണൂറ്റി${ones[num - 90]}`;
+
+    return `${num}`;
+}
+
+export function numberToManglishWords(num: number): string {
+    const ones: Record<number, string> = {
+        0: 'poojyam', 1: 'onnu', 2: 'randu', 3: 'moonnu', 4: 'naalu', 5: 'anju',
+        6: 'aaru', 7: 'yezhu', 8: 'yettu', 9: 'onpathu', 10: 'patthu',
+        11: 'pathinonnu', 12: 'pantrandu', 13: 'pathimoonnu', 14: 'pathinaalu', 15: 'pathinanju',
+        16: 'pathinaaru', 17: 'pathinezhu', 18: 'pathinettu', 19: 'pathonpathu'
+    };
+    if (ones[num]) return ones[num];
+
+    const tens: Record<number, string> = {
+        20: 'irupathu', 30: 'muppathu', 40: 'naalpathu', 50: 'ambathu',
+        60: 'arupathu', 70: 'ezhupathu', 80: 'enpathu', 90: 'thonnooru', 100: 'nooru'
+    };
+    if (tens[num]) return tens[num];
+
+    if (num > 20 && num < 30) return `irupatthi-${ones[num - 20]}`;
+    if (num > 30 && num < 40) return `muppatthi-${ones[num - 30]}`;
+    if (num > 40 && num < 50) return `naalpatthi-${ones[num - 40]}`;
+    if (num > 50 && num < 60) return `ambatthi-${ones[num - 50]}`;
+
+    return `${num}`;
+}
+
+function formatMalayalamOrigin(stopName: string): string {
+    const s = stopName.trim();
+    if (s.endsWith('ം')) {
+        return `${s.slice(0, -1)}ത്ത് നിന്ന്`;
+    }
+    if (s.endsWith('്') || s.endsWith('ർ') || s.endsWith('ൽ') || s.endsWith('ക്ക്')) {
+        return `${s}ിൽ നിന്ന്`;
+    }
+    return `${s}ിൽ നിന്ന്`;
+}
+
+function formatMalayalamDest(stopName: string): string {
+    const s = stopName.trim();
+    if (s.endsWith('ം')) {
+        return `${s.slice(0, -1)}ത്തേക്ക്`;
+    }
+    if (s.endsWith('്') || s.endsWith('ർ') || s.endsWith('ൽ') || s.endsWith('ക്ക്')) {
+        return `${s}ിലേക്ക്`;
+    }
+    return `${s}ിലേക്ക്`;
+}
+
+function cleanStopNameForTTS(name: string): string {
+    return name
+        .replace(/\s+(?:Junction|Jn|Bus Stop|Stop|Terminal|Stand|Bypass)$/i, '')
+        .trim();
+}
+
+function formatManglishOrigin(name: string): string {
+    const clean = cleanStopNameForTTS(name);
+    const lower = clean.toLowerCase();
+    if (lower.endsWith('am') || lower.endsWith('om')) {
+        return `${clean.replace(/(am|om)$/i, 'ath')} ninnum`;
+    }
+    if (/[aeiouy]$/i.test(clean)) {
+        return `${clean}yil ninnum`;
+    }
+    return `${clean}-il ninnum`;
+}
+
+function formatManglishDest(name: string): string {
+    const clean = cleanStopNameForTTS(name);
+    const lower = clean.toLowerCase();
+    if (lower.endsWith('am') || lower.endsWith('om')) {
+        return `${clean.replace(/(am|om)$/i, 'athekku')}`;
+    }
+    if (/[aeiouy]$/i.test(clean)) {
+        return `${clean}yilekku`;
+    }
+    return `${clean}-ilekku`;
+}
 
 /**
  * Generates natural spoken journey instructions following the required format.
@@ -414,27 +480,27 @@ export function generateSpokenSummary(
     const destination = getLocalizedStopName(destinationStop, lang);
 
     if (lang === 'ml') {
+        const fromStop = formatMalayalamOrigin(boarding);
+        const toStop = formatMalayalamDest(destination);
         if (estimatedFare != null) {
-            const fareWord = numberWords.ml[estimatedFare] || `${estimatedFare}`;
-            return `${boarding}ൽ നിന്ന്, ${destination} ലേക്ക് ബസ് എടുക്കുക. ടിക്കറ്റ് നിരക്ക് ഏകദേശം ${fareWord} രൂപയാണ്.`;
+            const fareWord = numberToMalayalamWords(estimatedFare);
+            return `${fromStop} ${toStop} ബസ് എടുക്കുക. ടിക്കറ്റ് നിരക്ക് ${fareWord} രൂപയാണ്.`;
         }
-        return `${boarding}ൽ നിന്ന്, ${destination} ലേക്ക് ബസ് എടുക്കുക. നിരക്ക് വിവരം ലഭ്യമല്ല.`;
+        return `${fromStop} ${toStop} ബസ് എടുക്കുക. നിരക്ക് വിവരം ലഭ്യമല്ല.`;
     }
 
     if (lang === 'hi') {
         if (estimatedFare != null) {
-            const fareWord = numberWords.hi[estimatedFare] || `${estimatedFare}`;
-            return `${boarding} से, ${destination} के लिए बस लें। अनुमानित किराया ${fareWord} रुपये है।`;
+            return `${boarding} से ${destination} के लिए बस लें। टिकट दर ${estimatedFare} रुपये है।`;
         }
-        return `${boarding} से, ${destination} के लिए bus len. किराया विवरण उपलब्ध नहीं है।`;
+        return `${boarding} से ${destination} के लिए बस लें।`;
     }
 
     // Default English
     if (estimatedFare != null) {
-        const fareWord = numberWords.en[estimatedFare] || `${estimatedFare}`;
-        return `Take a bus from ${boarding}, to ${destination}. Your estimated fare is ${fareWord} rupees.`;
+        return `Take a bus from ${boarding} to ${destination}. Your estimated fare is ${estimatedFare} rupees.`;
     }
-    return `Take a bus from ${boarding}, to ${destination}. Fare estimate is unavailable.`;
+    return `Take a bus from ${boarding} to ${destination}. Fare estimate is unavailable.`;
 }
 
 /**
@@ -447,26 +513,23 @@ export function generatePhoneticSummary(
     estimatedFare: number | null,
     lang: string = 'en'
 ): string {
-    const boarding = boardingStop.replace(/\s+(?:bus stop|stop|jn|junction)$/i, '').trim();
-    const destination = destinationStop.replace(/\s+(?:bus stop|stop|jn|junction)$/i, '').trim();
-
     if (lang === 'ml') {
-        const farePhonetic = estimatedFare != null 
-            ? (numberWordsPhonetic[estimatedFare] || `${estimatedFare}`)
-            : null;
-
-        if (farePhonetic) {
-            return `${boarding} il ninnum, ${destination} lekku bus edukkuka. Ticket charge ekadhesham ${farePhonetic} roopa aanu.`;
+        const fromStop = formatManglishOrigin(boardingStop);
+        const toStop = formatManglishDest(destinationStop);
+        if (estimatedFare != null) {
+            const fareWord = numberToManglishWords(estimatedFare);
+            return `${fromStop} ${toStop} bus edukkuka. Ticket charge ${fareWord} roopa aanu.`;
         }
-        return `${boarding} il ninnum, ${destination} lekku bus edukkuka.`;
+        return `${fromStop} ${toStop} bus edukkuka.`;
     }
 
     if (lang === 'hi') {
+        const cleanBoarding = cleanStopNameForTTS(boardingStop);
+        const cleanDest = cleanStopNameForTTS(destinationStop);
         if (estimatedFare != null) {
-            const fareWord = numberWords.hi[estimatedFare] || `${estimatedFare}`;
-            return `${boarding} se, ${destination} ke liye bus lein. Anumaanit kiraaya ${fareWord} rupaye hai.`;
+            return `${cleanBoarding} se ${cleanDest} ke liye bus lein. Ticket charge ${estimatedFare} rupaye hai.`;
         }
-        return `${boarding} se, ${destination} ke liye bus lein.`;
+        return `${cleanBoarding} se ${cleanDest} ke liye bus lein.`;
     }
 
     return generateSpokenSummary(boardingStop, destinationStop, estimatedFare, 'en');

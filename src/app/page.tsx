@@ -154,13 +154,11 @@ export default function Home() {
         // Fall back to an Indian English or Hindi voice engine which exists on all mobile devices
         const fallbackVoice = voices.find(v => 
           v.lang.toLowerCase() === 'en-in' || 
-          v.lang.toLowerCase() === 'hi-in' ||
+          v.lang.toLowerCase() === 'en_in' ||
           v.name.toLowerCase().includes('india') ||
           v.name.toLowerCase().includes('rishi') ||
           v.name.toLowerCase().includes('veena') ||
-          v.name.toLowerCase().includes('lekha') ||
-          v.name.toLowerCase().includes('neerja') ||
-          v.name.toLowerCase().includes('kavya')
+          v.name.toLowerCase().includes('lekha')
         ) || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0];
 
         voiceToUse = fallbackVoice;
@@ -169,7 +167,8 @@ export default function Home() {
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = langToSet;
-      utterance.rate = 0.88;
+      // 0.86 rate provides clear, unhurried articulation of Malayalam phonemes
+      utterance.rate = lang === 'ml' ? 0.86 : 0.92;
       utterance.pitch = 1.0;
       if (voiceToUse) {
         utterance.voice = voiceToUse;
