@@ -555,11 +555,11 @@ export default function Home() {
 
               <div className="metric-box">
                 <div className="metric-label">{t.estimatedFare}</div>
-                <div className="metric-val" style={{ color: '#34d399' }}>
-                  {fare?.available ? `₹${fare.estimatedFare}` : '--'}
+                <div className="metric-val" style={{ color: '#34d399', fontWeight: 800, fontSize: '1.6rem' }}>
+                  {fare?.estimatedFare != null ? `₹${fare.estimatedFare}` : '--'}
                 </div>
                 <div className="metric-sub">
-                  {fare?.available ? `(${t.estimated})` : t.fareUnavailable}
+                  {fare?.estimatedFare != null ? `(${t.estimated})` : t.fareUnavailable}
                 </div>
               </div>
             </div>
