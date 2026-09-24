@@ -28,10 +28,12 @@ export function loadLanguageEngine(): void {
 
     aliasToCanonicalMap.clear();
 
+    // 1. Add translations & aliases from stopTranslations.json
     if (translationsData && Array.isArray(translationsData.stops)) {
         for (const entry of translationsData.stops) {
             const canonical = entry.canonical;
             aliasToCanonicalMap.set(canonical.toLowerCase(), canonical);
+            aliasToCanonicalMap.set(cleanText(canonical).toLowerCase(), canonical);
 
             // Add all translations
             if (entry.translations) {
@@ -54,6 +56,62 @@ export function loadLanguageEngine(): void {
                     }
                 }
             }
+        }
+    }
+
+    // 2. Auto-index all GTFS stops from routeEngine with suffix-stripping & phonetics
+    if (stops && stops.length > 0) {
+        for (const s of stops) {
+            const name = s.stop_name;
+            const lower = name.toLowerCase();
+            if (!aliasToCanonicalMap.has(lower)) {
+                aliasToCanonicalMap.set(lower, name);
+            }
+
+            // Strip common stop suffixes to index the base place name
+            const strippedSuffix = lower.replace(/\s+(?:junction|jn|bus stop|stop|ferry|gate|temple|church|mosque|stand|terminal|palli|road|bypass)$/i, '').trim();
+            if (strippedSuffix.length >= 3 && !aliasToCanonicalMap.has(strippedSuffix)) {
+                aliasToCanonicalMap.set(strippedSuffix, name);
+            }
+        }
+    }
+
+    // 3. Kochi Landmark & Common Spoken Aliases
+    const popularLandmarkAliases: Record<string, string[]> = {
+        'Thrippunithura': ['tripunithura', 'thripunithura', 'thrippoonithura', 'tripunithra', 'thripunithara', 'tripunithura statue'],
+        'Infopark': ['info park', 'infopark kochi', 'infopark first gate', 'infopark main gate', 'smart city', 'smartcity', 'kakkanad infopark'],
+        'Kakkanad': ['kakkanad civil station', 'kaknad', 'kakkanadu', 'civil station kakkanad', 'civil station'],
+        'Edappally Toll': ['edappally', 'edapally', 'edappalli', 'edappally bypass', 'lulu mall', 'edappally toll junction'],
+        'North Kalamassery': ['kalamassery', 'kalamasseri', 'kalamassery premier', 'south kalamassery'],
+        'Vyttila': ['vytilla', 'vytila', 'vyttila hub', 'vytilla hub', 'vyttila junction'],
+        'Kundanoor Junction': ['kundannoor', 'kundanoor', 'kundannoor junction', 'kundanoor jn'],
+        'Vypin': ['vypeen', 'vypin jetty', 'vypeen jetty', 'vypin bus stand'],
+        'Palarivattom': ['palarivattam', 'palarivattom bypass', 'palarivattom junction'],
+        'Menaka': ['marine drive', 'marine drive kochi', 'menaka junction', 'menaka bus stop'],
+        'High Court': ['high court junction', 'highcourt', 'high court ernakulam'],
+        'Jose Junction': ['mg road', 'm.g. road', 'm g road', 'mg road ernakulam', 'jos junction'],
+        'Shenoys': ['shenoys junction', 'shenoy theatre', 'maharajas ground', 'maharajas'],
+        'Kadavanthra': ['panampilly nagar', 'panampilly', 'kadavanthra junction'],
+        'Town Hall': ['lissie', 'lisie', 'lissie junction', 'lisie hospital', 'ernakulam north', 'north railway station', 'town hall ernakulam'],
+        'Ernakulam South': ['south railway station', 'ernakulam south railway station', 'south station', 'south'],
+        'Aluva': ['alwaye', 'aluva bus stand', 'aluva railway station', 'aluva manappuram'],
+        'Angamaly': ['angamali', 'angamaly bus stand', 'angamaly railway station', 'angamaly ksrtc'],
+        'Perumbavoor': ['perumbavur', 'perumbavoor bus stand', 'perumbavoor ksrtc'],
+        'Fort Kochi': ['fortkochi', 'fort kochi beach', 'fort kochi bus stand'],
+        'Mattancherry': ['mattancheri', 'mattancherry bus stand', 'mattancherry bazar'],
+        'Thevara': ['thevara ferry', 'thevara junction', 'thevara sh college'],
+        'Thoppumpady': ['thoppumpadi', 'thoppumpady junction', 'thoppumpady bridge'],
+        'Cheranalloor': ['cheranallur', 'cheranelloor', 'cheranalloor signal'],
+        'Chittoor Ferry': ['chittoor', 'chittur', 'chittoor south', 'south chittoor'],
+        'Vazhakkala': ['vazhakala', 'vazhakkala junction'],
+        'Padamugal': ['padamukal', 'padamugal junction'],
+        'Kaloor': ['kaloor junction', 'kaloor stadium', 'jawaharlal nehru stadium', 'kaloor bus stand'],
+        'KSRTC Bus Station': ['ksrtc', 'ksrtc bus stand', 'ksrtc ernakulam', 'ernakulam ksrtc']
+    };
+
+    for (const [canonical, aliases] of Object.entries(popularLandmarkAliases)) {
+        for (const a of aliases) {
+            aliasToCanonicalMap.set(a.toLowerCase(), canonical);
         }
     }
 }
