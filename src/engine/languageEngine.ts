@@ -418,3 +418,34 @@ export function generateSpokenSummary(
     }
     return `Take a bus from ${boarding} to ${destination}. Fare estimate is unavailable.`;
 }
+
+/**
+ * Generates phonetic Latin transliterated spoken audio instructions for mobile devices
+ * (like iPhones/iOS Safari) that do not have native Malayalam or Hindi TTS voice engines.
+ */
+export function generatePhoneticSummary(
+    boardingStop: string,
+    destinationStop: string,
+    estimatedFare: number | null,
+    lang: string = 'en'
+): string {
+    const boarding = boardingStop;
+    const destination = destinationStop;
+
+    if (lang === 'ml') {
+        if (estimatedFare != null) {
+            return `${boarding}il ninnu ${destination}ilekku bus edukuka. Ekadesha nirakku ${estimatedFare} roopa aanu.`;
+        }
+        return `${boarding}il ninnu ${destination}ilekku bus edukuka.`;
+    }
+
+    if (lang === 'hi') {
+        if (estimatedFare != null) {
+            return `${boarding} se ${destination} ke liye bus lein. Anumaanit kiraaya ${estimatedFare} rupaye hai.`;
+        }
+        return `${boarding} se ${destination} ke liye bus lein.`;
+    }
+
+    return generateSpokenSummary(boardingStop, destinationStop, estimatedFare, 'en');
+}
+

@@ -100,32 +100,94 @@ export default function Home() {
     return localizeStop(routeName);
   };
 
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const updateVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length > 0) {
+        setAvailableVoices(v);
+      }
+    };
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
   // Speak journey summary aloud using SpeechSynthesis
-  const speakText = (text: string) => {
+  const speakText = (text: string, phoneticFallback?: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       return;
     }
 
     try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = speechLangMap[lang];
-      utterance.rate = 0.95;
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
+      }
 
-      const voices = window.speechSynthesis.getVoices();
-      const matchedVoice = voices.find(v => 
-        v.lang === speechLangMap[lang] || 
-        v.lang.startsWith(speechLangMap[lang].split('-')[0])
+      const voices = availableVoices.length > 0 ? availableVoices : window.speechSynthesis.getVoices();
+      const targetLang = speechLangMap[lang] || 'en-IN';
+      const targetPrefix = targetLang.split('-')[0].toLowerCase();
+
+      // Check if the device has a native voice for this language (e.g. ml-IN, hi-IN)
+      const nativeVoice = voices.find(v => 
+        v.lang.toLowerCase() === targetLang.toLowerCase() || 
+        v.lang.toLowerCase().startsWith(targetPrefix) ||
+        (targetPrefix === 'ml' && v.name.toLowerCase().includes('malayalam')) ||
+        (targetPrefix === 'hi' && v.name.toLowerCase().includes('hindi'))
       );
-      if (matchedVoice) {
-        utterance.voice = matchedVoice;
+
+      let textToSpeak = text;
+      let voiceToUse = nativeVoice;
+      let langToSet = targetLang;
+
+      // If Malayalam or Hindi is requested but device has no synthesizer for native script (common on iOS Safari / older Android)
+      if (!nativeVoice && (lang === 'ml' || lang === 'hi')) {
+        if (phoneticFallback) {
+          textToSpeak = phoneticFallback;
+        }
+        // Fall back to an Indian English or Hindi voice engine which exists on all mobile devices
+        const fallbackVoice = voices.find(v => 
+          v.lang.toLowerCase() === 'en-in' || 
+          v.name.toLowerCase().includes('india') ||
+          v.name.toLowerCase().includes('rishi') ||
+          v.name.toLowerCase().includes('veena') ||
+          v.name.toLowerCase().includes('lekha')
+        ) || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0];
+
+        voiceToUse = fallbackVoice;
+        langToSet = fallbackVoice?.lang || 'en-IN';
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = langToSet;
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+      if (voiceToUse) {
+        utterance.voice = voiceToUse;
       }
 
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onerror = (err) => {
+        console.warn('Speech synthesis error:', err);
+        setIsSpeaking(false);
+      };
 
-      window.speechSynthesis.speak(utterance);
+      // Slight timeout avoids iOS Safari audio unlock race conditions
+      setTimeout(() => {
+        try {
+          window.speechSynthesis.speak(utterance);
+        } catch (e) {
+          console.warn('Speech speak error:', e);
+          setIsSpeaking(false);
+        }
+      }, 50);
     } catch (e) {
       console.warn('Speech synthesis unavailable:', e);
       setIsSpeaking(false);
@@ -167,7 +229,7 @@ export default function Home() {
           setResult(res);
           setVoiceState('idle');
           if (res.spokenSummary) {
-            speakText(res.spokenSummary);
+            speakText(res.spokenSummary, res.spokenSummaryPhonetic);
           }
         } else {
           // If extraction fails, do NOT run route engine; show clear retry option
@@ -287,7 +349,7 @@ export default function Home() {
       const res = await searchJourneyAction(origin, dest, lang);
       setResult(res);
       if (res.success && res.spokenSummary) {
-        speakText(res.spokenSummary);
+        speakText(res.spokenSummary, res.spokenSummaryPhonetic);
       }
     } catch (err) {
       setResult({ success: false, error: t.errorGeneric });
@@ -606,7 +668,7 @@ export default function Home() {
                   if (isSpeaking) {
                     stopSpeaking();
                   } else if (spokenSummary) {
-                    speakText(spokenSummary);
+                    speakText(spokenSummary, result.spokenSummaryPhonetic);
                   }
                 }}
               >

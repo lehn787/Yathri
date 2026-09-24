@@ -5,7 +5,7 @@ import path from 'path';
 import { loadGTFS } from '../engine/routeEngine';
 import { findJourney, JourneyResult } from '../engine/journeyEngine';
 import { loadFareEngine, estimateFare, FareResult } from '../engine/fareEngine';
-import { loadLanguageEngine, getLocalizedStopName, generateSpokenSummary } from '../engine/languageEngine';
+import { loadLanguageEngine, getLocalizedStopName, generateSpokenSummary, generatePhoneticSummary } from '../engine/languageEngine';
 import { parseJourneyIntent, resolveStopToken } from '../engine/journeyIntentParser';
 
 function getGtfsDirectory(): string {
@@ -47,6 +47,7 @@ export interface SearchResponse {
     journey?: JourneyResult;
     fare?: FareResult;
     spokenSummary?: string;
+    spokenSummaryPhonetic?: string;
     extractedStops?: {
         origin: string;
         destination: string;
@@ -134,13 +135,21 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
         fare.available ? fare.estimatedFare : null,
         lang
     );
+    const spokenSummaryPhonetic = generatePhoneticSummary(
+        journey.boardingStop || canonicalOrigin,
+        journey.destinationStop || canonicalDest,
+        fare.available ? fare.estimatedFare : null,
+        lang
+    );
     console.log(`[TTS] response: ${spokenSummary}`);
+    console.log(`[TTS] phonetic response: ${spokenSummaryPhonetic}`);
 
     return {
         success: true,
         journey,
         fare,
         spokenSummary,
+        spokenSummaryPhonetic,
         extractedStops: {
             origin: canonicalOrigin,
             destination: canonicalDest
