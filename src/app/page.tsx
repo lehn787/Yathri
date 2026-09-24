@@ -173,7 +173,7 @@ export default function Home() {
       });
   };
 
-  const startListening = () => {
+  const startListening = (fallbackLang?: string) => {
     if (typeof window === 'undefined') return;
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -184,7 +184,8 @@ export default function Home() {
     }
 
     stopSpeaking();
-    console.log(`[VOICE] selected language: ${speechLangMap[lang]}`);
+    const activeLang = fallbackLang || speechLangMap[lang] || 'en-IN';
+    console.log(`[VOICE] selected language: ${activeLang}`);
 
     try {
       if (recognitionRef.current) {
@@ -192,7 +193,7 @@ export default function Home() {
       }
 
       const recognition = new SpeechRecognition();
-      recognition.lang = speechLangMap[lang];
+      recognition.lang = activeLang;
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
@@ -214,6 +215,17 @@ export default function Home() {
 
       recognition.onerror = (event: any) => {
         console.log(`[VOICE] error: ${event.error}`);
+
+        // If the mobile browser/OS does not support ml-IN or hi-IN, gracefully fallback to en-IN
+        if ((event.error === 'language-not-supported' || event.error === 'service-not-allowed') && activeLang !== 'en-IN') {
+          console.log('[VOICE] Locale not supported on device, falling back to en-IN...');
+          try {
+            recognition.abort();
+          } catch (e) {}
+          startListening('en-IN');
+          return;
+        }
+
         if (event.error === 'not-allowed') {
           setVoiceError(t.micErrorPermission);
         } else if (event.error === 'no-speech') {
@@ -235,6 +247,10 @@ export default function Home() {
       recognition.start();
     } catch (err: any) {
       console.log(`[VOICE] exception: ${err?.message}`);
+      if (activeLang !== 'en-IN') {
+        startListening('en-IN');
+        return;
+      }
       setVoiceError(t.errorGeneric);
       setVoiceState('error');
     }
@@ -333,7 +349,7 @@ export default function Home() {
             <button 
               type="button" 
               className={`voice-btn ${voiceState === 'listening' ? 'listening' : ''} ${voiceState === 'processing' ? 'processing' : ''}`}
-              onClick={voiceState === 'listening' ? stopListening : startListening}
+              onClick={voiceState === 'listening' ? stopListening : () => startListening()}
               aria-label="Voice input"
             >
               {voiceState === 'listening' ? (
@@ -366,7 +382,7 @@ export default function Home() {
                 type="button" 
                 className="chip" 
                 style={{ marginTop: '0.75rem', background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}
-                onClick={startListening}
+                onClick={() => startListening()}
               >
                 🔄 {t.tapToRetry}
               </button>
