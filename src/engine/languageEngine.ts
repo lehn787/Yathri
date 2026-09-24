@@ -367,20 +367,38 @@ export function getLocalizedRouteName(routeName: string, lang: string): string {
  */
 const numberWords: Record<string, Record<number, string>> = {
     ml: {
+        5: 'അഞ്ച്', 6: 'ആറ്', 7: 'ഏഴ്', 8: 'എട്ട്', 9: 'ഒൻപത്',
         10: 'പത്ത്', 11: 'പതിനൊന്ന്', 12: 'പന്ത്രണ്ട്', 13: 'പതിമൂന്ന്', 14: 'പതിനാല്',
         15: 'പതിനഞ്ച്', 16: 'പതിനാറ്', 17: 'പതിനേഴ്', 18: 'പതിനെട്ട്', 19: 'പത്തൊൻപത്',
-        20: 'ഇരുപത്', 21: 'ഇരുപത്തിയൊന്ന്', 22: 'ഇരുപത്തിരണ്ട്', 25: 'ഇരുപത്തിയഞ്ച്', 30: 'മുപ്പത്'
+        20: 'ഇരുപത്', 21: 'ഇരുപത്തിയൊന്ന്', 22: 'ഇരുപത്തിരണ്ട്', 23: 'ഇരുപത്തിമൂന്ന്', 24: 'ഇരുപത്തിനാല്',
+        25: 'ഇരുപത്തിയഞ്ച്', 26: 'ഇരുപത്തിയാറ്', 27: 'ഇരുപത്തിയേഴ്', 28: 'ഇരുപത്തിയെട്ട്', 29: 'ഇരുപത്തിയൊൻപത്',
+        30: 'മുപ്പത്', 35: 'മുപ്പത്തിയഞ്ച്', 40: 'നാല്പത്', 45: 'നാല്പത്തിയഞ്ച്', 50: 'അമ്പത്'
     },
     hi: {
+        5: 'पांच', 6: 'छह', 7: 'सात', 8: 'आठ', 9: 'नौ',
         10: 'दस', 11: 'ग्यारह', 12: 'बारह', 13: 'तेरह', 14: 'चौदह',
         15: 'पंद्रह', 16: 'सोलह', 17: 'सत्रह', 18: 'अठारह', 19: 'उन्नीस',
-        20: 'बीस', 21: 'इक्कीस', 22: 'बाईस', 25: 'पच्चीस', 30: 'तीस'
+        20: 'बीस', 21: 'इक्कीस', 22: 'बाईस', 23: 'तेईस', 24: 'चौबीस',
+        25: 'पच्चीस', 26: 'छब्बीस', 27: 'सत्ताईस', 28: 'अट्ठाईस', 29: 'उनतीस',
+        30: 'तीस', 35: 'पैंतीस', 40: 'चालीस', 45: 'पैंतालीस', 50: 'पचास'
     },
     en: {
+        5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine',
         10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
         15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen', 19: 'nineteen',
-        20: 'twenty', 21: 'twenty-one', 22: 'twenty-two', 25: 'twenty-five', 30: 'thirty'
+        20: 'twenty', 21: 'twenty-one', 22: 'twenty-two', 23: 'twenty-three', 24: 'twenty-four',
+        25: 'twenty-five', 26: 'twenty-six', 27: 'twenty-seven', 28: 'twenty-eight', 29: 'twenty-nine',
+        30: 'thirty', 35: 'thirty-five', 40: 'forty', 45: 'forty-five', 50: 'fifty'
     }
+};
+
+const numberWordsPhonetic: Record<number, string> = {
+    5: 'anchu', 6: 'aaru', 7: 'yezhu', 8: 'ettu', 9: 'onpathu',
+    10: 'pathu', 11: 'pathinonnu', 12: 'panthrandu', 13: 'pathimoonnu', 14: 'pathinaalu',
+    15: 'pathinanchu', 16: 'pathinaaru', 17: 'pathinyezhu', 18: 'pathinettu', 19: 'pathonpathu',
+    20: 'irupathu', 21: 'irupathi onnu', 22: 'irupathi randu', 23: 'irupathi moonnu', 24: 'irupathi naalu',
+    25: 'irupathianchu', 26: 'irupathi aaru', 27: 'irupathi yezhu', 28: 'irupathi yettu', 29: 'irupathi onpathu',
+    30: 'muppathu', 35: 'muppathianchu', 40: 'nalpathu', 45: 'nalpathianchu', 50: 'ambathu'
 };
 
 /**
@@ -398,25 +416,25 @@ export function generateSpokenSummary(
     if (lang === 'ml') {
         if (estimatedFare != null) {
             const fareWord = numberWords.ml[estimatedFare] || `${estimatedFare}`;
-            return `${boarding}ൽ നിന്ന് ${destination}ലേക്ക് ബസ് എടുക്കുക. ഏകദേശ നിരക്ക് ${fareWord} രൂപയാണ്.`;
+            return `${boarding}ൽ നിന്ന്, ${destination} ലേക്ക് ബസ് എടുക്കുക. ടിക്കറ്റ് നിരക്ക് ഏകദേശം ${fareWord} രൂപയാണ്.`;
         }
-        return `${boarding}ൽ നിന്ന് ${destination}ലേക്ക് ബസ് എടുക്കുക. നിരക്ക് വിവരം ലഭ്യമല്ല.`;
+        return `${boarding}ൽ നിന്ന്, ${destination} ലേക്ക് ബസ് എടുക്കുക. നിരക്ക് വിവരം ലഭ്യമല്ല.`;
     }
 
     if (lang === 'hi') {
         if (estimatedFare != null) {
             const fareWord = numberWords.hi[estimatedFare] || `${estimatedFare}`;
-            return `${boarding} से ${destination} के लिए बस लें। अनुमानित किराया ${fareWord} रुपये है।`;
+            return `${boarding} से, ${destination} के लिए बस लें। अनुमानित किराया ${fareWord} रुपये है।`;
         }
-        return `${boarding} से ${destination} के लिए बस लें। किराया विवरण उपलब्ध नहीं है।`;
+        return `${boarding} से, ${destination} के लिए bus len. किराया विवरण उपलब्ध नहीं है।`;
     }
 
     // Default English
     if (estimatedFare != null) {
         const fareWord = numberWords.en[estimatedFare] || `${estimatedFare}`;
-        return `Take a bus from ${boarding} to ${destination}. Your estimated fare is ${fareWord} rupees.`;
+        return `Take a bus from ${boarding}, to ${destination}. Your estimated fare is ${fareWord} rupees.`;
     }
-    return `Take a bus from ${boarding} to ${destination}. Fare estimate is unavailable.`;
+    return `Take a bus from ${boarding}, to ${destination}. Fare estimate is unavailable.`;
 }
 
 /**
@@ -429,21 +447,26 @@ export function generatePhoneticSummary(
     estimatedFare: number | null,
     lang: string = 'en'
 ): string {
-    const boarding = boardingStop;
-    const destination = destinationStop;
+    const boarding = boardingStop.replace(/\s+(?:bus stop|stop|jn|junction)$/i, '').trim();
+    const destination = destinationStop.replace(/\s+(?:bus stop|stop|jn|junction)$/i, '').trim();
 
     if (lang === 'ml') {
-        if (estimatedFare != null) {
-            return `${boarding}il ninnu ${destination}ilekku bus edukuka. Ekadesha nirakku ${estimatedFare} roopa aanu.`;
+        const farePhonetic = estimatedFare != null 
+            ? (numberWordsPhonetic[estimatedFare] || `${estimatedFare}`)
+            : null;
+
+        if (farePhonetic) {
+            return `${boarding} il ninnum, ${destination} lekku bus edukkuka. Ticket charge ekadhesham ${farePhonetic} roopa aanu.`;
         }
-        return `${boarding}il ninnu ${destination}ilekku bus edukuka.`;
+        return `${boarding} il ninnum, ${destination} lekku bus edukkuka.`;
     }
 
     if (lang === 'hi') {
         if (estimatedFare != null) {
-            return `${boarding} se ${destination} ke liye bus lein. Anumaanit kiraaya ${estimatedFare} rupaye hai.`;
+            const fareWord = numberWords.hi[estimatedFare] || `${estimatedFare}`;
+            return `${boarding} se, ${destination} ke liye bus lein. Anumaanit kiraaya ${fareWord} rupaye hai.`;
         }
-        return `${boarding} se ${destination} ke liye bus lein.`;
+        return `${boarding} se, ${destination} ke liye bus lein.`;
     }
 
     return generateSpokenSummary(boardingStop, destinationStop, estimatedFare, 'en');
