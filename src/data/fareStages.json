@@ -1,0 +1,7 @@
+{
+  "_comment": "Kerala MVD Ordinary/City/Town Stage Carriage Fare Estimate Model",
+  "baseFare": 10,
+  "baseDistanceKm": 2.5,
+  "ratePerKm": 1.0,
+  "stageDistanceKm": 2.5
+}
