@@ -150,6 +150,7 @@ export default function Home() {
     searchJourneyAction(speechQuery, '', lang)
       .then(res => {
         if (res.success && res.extractedStops) {
+          // 4. Populate From and To fields with resolved names
           setOrigin(localizeStop(res.extractedStops.origin));
           setDest(localizeStop(res.extractedStops.destination));
           setResult(res);
@@ -183,6 +184,7 @@ export default function Home() {
     }
 
     stopSpeaking();
+    console.log(`[VOICE] selected language: ${speechLangMap[lang]}`);
 
     try {
       if (recognitionRef.current) {
@@ -196,6 +198,7 @@ export default function Home() {
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        console.log('[VOICE] recognition started');
         setVoiceState('listening');
         setVoiceError(null);
         setSpokenInput(null);
@@ -203,12 +206,14 @@ export default function Home() {
 
       recognition.onresult = (event: any) => {
         const transcript = event.results[0]?.[0]?.transcript;
+        console.log(`[VOICE] raw transcript: ${transcript}`);
         if (transcript) {
           handleVoiceSearch(transcript);
         }
       };
 
       recognition.onerror = (event: any) => {
+        console.log(`[VOICE] error: ${event.error}`);
         if (event.error === 'not-allowed') {
           setVoiceError(t.micErrorPermission);
         } else if (event.error === 'no-speech') {
@@ -220,6 +225,7 @@ export default function Home() {
       };
 
       recognition.onend = () => {
+        console.log('[VOICE] recognition ended');
         if (voiceState === 'listening') {
           setVoiceState('idle');
         }
@@ -228,6 +234,7 @@ export default function Home() {
       recognitionRef.current = recognition;
       recognition.start();
     } catch (err: any) {
+      console.log(`[VOICE] exception: ${err?.message}`);
       setVoiceError(t.errorGeneric);
       setVoiceState('error');
     }
@@ -346,7 +353,12 @@ export default function Home() {
               {voiceState === 'listening' && t.micListening}
               {voiceState === 'processing' && t.micProcessing}
               {voiceState === 'idle' && t.micIdle}
-              {voiceState === 'error' && (voiceError || t.cantIdentify)}
+              {voiceState === 'error' && (
+                <div>
+                  <div>{voiceError || t.cantIdentify}</div>
+                  {t.trySaying && <div style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: '0.25rem', color: '#93c5fd' }}>{t.trySaying}</div>}
+                </div>
+              )}
             </div>
 
             {voiceState === 'error' && (

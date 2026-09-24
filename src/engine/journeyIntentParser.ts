@@ -248,11 +248,14 @@ export function extractOriginAndDestinationSegments(text: string): { originRaw: 
  * canonical GTFS stop names.
  */
 export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
+    console.log(`[INTENT] input: ${transcript}`);
+
     if (!transcript || !transcript.trim()) {
+        console.log(`[INTENT] confidence: low`);
         return {
             success: false,
             rawTranscript: transcript || '',
-            error: "I couldn't identify the boarding or destination stop."
+            error: "I couldn't identify your starting point and destination."
         };
     }
 
@@ -260,10 +263,17 @@ export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
     let segments = extractOriginAndDestinationSegments(raw);
 
     if (segments) {
+        console.log(`[INTENT] extracted origin: ${segments.originRaw}`);
+        console.log(`[INTENT] extracted destination: ${segments.destRaw}`);
+
         const canonicalOrigin = resolveStopToken(segments.originRaw);
         const canonicalDest = resolveStopToken(segments.destRaw);
 
+        console.log(`[STOP] resolved origin: ${canonicalOrigin || 'null'}`);
+        console.log(`[STOP] resolved destination: ${canonicalDest || 'null'}`);
+
         if (canonicalOrigin && canonicalDest) {
+            console.log(`[INTENT] confidence: high`);
             return {
                 success: true,
                 rawTranscript: raw,
@@ -273,6 +283,7 @@ export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
                 canonicalDestination: canonicalDest
             };
         } else {
+            console.log(`[INTENT] confidence: low`);
             // Explicit connector found (e.g. from X to Y or X ninnu Y) but stop is invalid
             return {
                 success: false,
@@ -281,7 +292,7 @@ export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
                 destRaw: segments.destRaw,
                 canonicalOrigin,
                 canonicalDestination: canonicalDest,
-                error: "I couldn't identify the boarding or destination stop."
+                error: "I couldn't identify your starting point and destination."
             };
         }
     }
@@ -297,6 +308,12 @@ export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
             const rightCanonical = resolveStopToken(rightPart);
 
             if (leftCanonical && rightCanonical && leftCanonical !== rightCanonical) {
+                console.log(`[INTENT] extracted origin: ${leftPart}`);
+                console.log(`[INTENT] extracted destination: ${rightPart}`);
+                console.log(`[INTENT] confidence: high`);
+                console.log(`[STOP] resolved origin: ${leftCanonical}`);
+                console.log(`[STOP] resolved destination: ${rightCanonical}`);
+
                 return {
                     success: true,
                     rawTranscript: raw,
@@ -309,10 +326,11 @@ export function parseJourneyIntent(transcript: string): ParsedJourneyIntent {
         }
     }
 
+    console.log(`[INTENT] confidence: low`);
     return {
         success: false,
         rawTranscript: raw,
-        error: "I couldn't identify the boarding or destination stop."
+        error: "I couldn't identify your starting point and destination."
     };
 }
 

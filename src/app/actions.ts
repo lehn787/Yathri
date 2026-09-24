@@ -105,7 +105,11 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
     }
 
     // Call deterministic route engine with canonical stop names
+    console.log(`[ROUTE] origin: ${canonicalOrigin}`);
+    console.log(`[ROUTE] destination: ${canonicalDest}`);
     const journey = findJourney(canonicalOrigin, canonicalDest);
+    console.log(`[ROUTE] result: ${journey.success ? journey.routeName : journey.error}`);
+
     if (!journey.success) {
         return {
             success: false,
@@ -115,6 +119,7 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
 
     // Calculate fare
     const fare = estimateFare(journey);
+    console.log(`[FARE] result: ${fare.available ? `₹${fare.estimatedFare}` : 'unavailable'}`);
 
     // Localized stops for UI
     const localized = {
@@ -129,6 +134,7 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
         fare.available ? fare.estimatedFare : null,
         lang
     );
+    console.log(`[TTS] response: ${spokenSummary}`);
 
     return {
         success: true,
