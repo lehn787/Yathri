@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { searchJourneyAction, SearchResponse } from './actions';
+import { searchJourneyAction, getGtfsStopsAction, SearchResponse } from './actions';
+import { StopSearchCombobox } from '../components/StopSearchCombobox';
 import uiTranslations from '../data/uiTranslations.json';
 import stopTranslations from '../data/stopTranslations.json';
 
@@ -27,9 +28,22 @@ export default function Home() {
   const [lang, setLang] = useState<Language>('en');
   const [origin, setOrigin] = useState('');
   const [dest, setDest] = useState('');
+  const [allGtfsStops, setAllGtfsStops] = useState<string[]>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [largeText, setLargeText] = useState(false);
+
+  // Load all available GTFS stops from dataset
+  useEffect(() => {
+    getGtfsStopsAction()
+      .then(stops => {
+        if (stops && stops.length > 0) {
+          setAllGtfsStops(stops);
+        }
+      })
+      .catch(err => console.error('Failed to load GTFS stops:', err));
+  }, []);
 
   // Load accessibility settings
   useEffect(() => {
@@ -220,14 +234,15 @@ export default function Home() {
     setVoiceState('processing');
     setLoading(true);
     setVoiceError(null);
+    setValidationError(null);
     setSpokenInput(speechQuery);
 
     searchJourneyAction(speechQuery, '', lang)
       .then(res => {
         if (res.success && res.extractedStops) {
-          // 4. Populate From and To fields with resolved names
-          setOrigin(localizeStop(res.extractedStops.origin));
-          setDest(localizeStop(res.extractedStops.destination));
+          // 4. Populate From and To fields with canonical resolved names
+          setOrigin(res.extractedStops.origin);
+          setDest(res.extractedStops.destination);
           setResult(res);
           setVoiceState('idle');
           if (res.spokenSummary) {
@@ -342,8 +357,20 @@ export default function Home() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!origin && !dest) return;
-    
+    if (!origin || !origin.trim()) {
+      setValidationError(t.fromPlaceholder || 'Please select a starting stop.');
+      return;
+    }
+    if (!dest || !dest.trim()) {
+      setValidationError(t.toPlaceholder || 'Please select a destination stop.');
+      return;
+    }
+    if (origin.trim().toLowerCase() === dest.trim().toLowerCase()) {
+      setValidationError((t as any).sameStopError || 'Starting stop and destination cannot be the same.');
+      return;
+    }
+
+    setValidationError(null);
     stopSpeaking();
     setSpokenInput(null);
     setLoading(true);
@@ -361,13 +388,13 @@ export default function Home() {
   };
 
   const selectQuickHub = (hub: string) => {
-    const loc = localizeStop(hub);
+    setValidationError(null);
     if (!origin) {
-      setOrigin(loc);
+      setOrigin(hub);
     } else if (!dest) {
-      setDest(loc);
+      setDest(hub);
     } else {
-      setOrigin(loc);
+      setOrigin(hub);
     }
   };
 
@@ -491,28 +518,43 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleSearch}>
-            <div className="input-group">
-              <label className="input-label">{t.fromLabel}</label>
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder={t.fromPlaceholder} 
-                value={origin}
-                onChange={e => setOrigin(e.target.value)}
-                required
-              />
-            </div>
+            <StopSearchCombobox
+              id="from-stop-combobox"
+              label={t.fromLabel}
+              placeholder={t.fromPlaceholder}
+              value={origin}
+              onChange={val => {
+                setOrigin(val);
+                setValidationError(null);
+              }}
+              allStops={allGtfsStops}
+              localizeStop={localizeStop}
+              disabled={loading}
+              icon="🟢"
+              noResultsText={(t as any).noStopsFound || 'No matching stops found'}
+            />
 
-            <div className="input-group">
-              <label className="input-label">{t.toLabel}</label>
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder={t.toPlaceholder} 
-                value={dest}
-                onChange={e => setDest(e.target.value)}
-              />
-            </div>
+            <StopSearchCombobox
+              id="to-stop-combobox"
+              label={t.toLabel}
+              placeholder={t.toPlaceholder}
+              value={dest}
+              onChange={val => {
+                setDest(val);
+                setValidationError(null);
+              }}
+              allStops={allGtfsStops}
+              localizeStop={localizeStop}
+              disabled={loading}
+              icon="🔴"
+              noResultsText={(t as any).noStopsFound || 'No matching stops found'}
+            />
+
+            {validationError && (
+              <div className="validation-alert" role="alert">
+                <span>⚠️</span> {validationError}
+              </div>
+            )}
 
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? t.searching : t.findJourney}

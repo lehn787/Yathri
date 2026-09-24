@@ -2,11 +2,18 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadGTFS } from '../engine/routeEngine';
+import { loadGTFS, stops } from '../engine/routeEngine';
 import { findJourney, JourneyResult } from '../engine/journeyEngine';
 import { loadFareEngine, estimateFare, FareResult } from '../engine/fareEngine';
 import { loadLanguageEngine, getLocalizedStopName, generateSpokenSummary, generatePhoneticSummary } from '../engine/languageEngine';
 import { parseJourneyIntent, resolveStopToken } from '../engine/journeyIntentParser';
+
+export async function getGtfsStopsAction(): Promise<string[]> {
+    ensureEngines();
+    const unique = Array.from(new Set(stops.map(s => s.stop_name?.trim()).filter(Boolean)));
+    unique.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+    return unique;
+}
 
 function getGtfsDirectory(): string {
     const candidates = [
