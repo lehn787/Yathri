@@ -57,7 +57,28 @@ function runVoiceIntentTests() {
             shouldSucceed: true
         },
         {
-            name: 'TEST 6: Unknown destination phrase (Never invent a stop)',
+            name: 'TEST 6: Inverted conversational English ("Take me to Infopark from Thrippunithura")',
+            input: 'Take me to Infopark from Thrippunithura',
+            expectedOrigin: 'Thrippunithura',
+            expectedDest: 'Infopark',
+            shouldSucceed: true
+        },
+        {
+            name: 'TEST 7: Spoken with single p phonetic ("Tripunithura to Infopark")',
+            input: 'Tripunithura to Infopark',
+            expectedOrigin: 'Thrippunithura',
+            expectedDest: 'Infopark',
+            shouldSucceed: true
+        },
+        {
+            name: 'TEST 8: Direct two-word spoken hubs ("Thrippunithura Infopark")',
+            input: 'Thrippunithura Infopark',
+            expectedOrigin: 'Thrippunithura',
+            expectedDest: 'Infopark',
+            shouldSucceed: true
+        },
+        {
+            name: 'TEST 9: Unknown destination phrase (Never invent a stop)',
             input: 'Thrippunithura il ninnu Narnia ilekku pokanam',
             shouldSucceed: false
         }

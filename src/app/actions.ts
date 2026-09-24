@@ -1,5 +1,6 @@
 'use server';
 
+import fs from 'fs';
 import path from 'path';
 import { loadGTFS } from '../engine/routeEngine';
 import { findJourney, JourneyResult } from '../engine/journeyEngine';
@@ -7,12 +8,30 @@ import { loadFareEngine, estimateFare, FareResult } from '../engine/fareEngine';
 import { loadLanguageEngine, getLocalizedStopName, generateSpokenSummary } from '../engine/languageEngine';
 import { parseJourneyIntent, resolveStopToken } from '../engine/journeyIntentParser';
 
+function getGtfsDirectory(): string {
+    const candidates = [
+        path.join(process.cwd(), 'data/gtfs'),
+        path.join(process.cwd(), 'yathri/data/gtfs'),
+        path.join(__dirname, '../../data/gtfs'),
+        path.join(__dirname, '../../../data/gtfs'),
+        path.join(__dirname, '../../../../data/gtfs'),
+        path.join(__dirname, '../data/gtfs'),
+        path.join(__dirname, './data/gtfs')
+    ];
+    for (const c of candidates) {
+        if (fs.existsSync(path.join(c, 'stops.txt'))) {
+            return c;
+        }
+    }
+    return candidates[0];
+}
+
 // Ensure data is loaded once
 let enginesLoaded = false;
 function ensureEngines() {
     if (enginesLoaded) return;
     try {
-        const gtfsDir = path.join(process.cwd(), 'data/gtfs');
+        const gtfsDir = getGtfsDirectory();
         loadGTFS(gtfsDir);
         loadFareEngine(gtfsDir);
         loadLanguageEngine();
