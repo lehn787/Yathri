@@ -29,6 +29,17 @@ export default function Home() {
   const [dest, setDest] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SearchResponse | null>(null);
+  const [largeText, setLargeText] = useState(false);
+
+  // Load accessibility settings
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('yathri_large_text');
+      if (saved === 'true') {
+        setLargeText(true);
+      }
+    } catch (e) {}
+  }, []);
 
   // Voice Interaction States
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
@@ -303,37 +314,56 @@ export default function Home() {
         <p className="subtitle">{t.appSubtitle}</p>
       </div>
 
-      <div className="lang-selector">
-        <button 
-          type="button" 
-          className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+      <div className="header-actions">
+        <button
+          type="button"
+          className={`access-btn ${largeText ? 'active' : ''}`}
           onClick={() => {
-            setLang('en');
-            stopSpeaking();
+            const next = !largeText;
+            setLargeText(next);
+            try {
+              localStorage.setItem('yathri_large_text', String(next));
+            } catch (e) {}
           }}
+          aria-label={largeText ? t.textNormal : t.largeText}
+          title={largeText ? t.textNormal : t.largeText}
         >
-          English
+          <span style={{ fontSize: '1rem', fontWeight: 800 }}>Aa</span>
+          <span>{largeText ? t.textNormal : t.largeText}</span>
         </button>
-        <button 
-          type="button" 
-          className={`lang-btn ${lang === 'ml' ? 'active' : ''}`}
-          onClick={() => {
-            setLang('ml');
-            stopSpeaking();
-          }}
-        >
-          മലയാളം
-        </button>
-        <button 
-          type="button" 
-          className={`lang-btn ${lang === 'hi' ? 'active' : ''}`}
-          onClick={() => {
-            setLang('hi');
-            stopSpeaking();
-          }}
-        >
-          हिन्दी
-        </button>
+
+        <div className="lang-selector">
+          <button 
+            type="button" 
+            className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+            onClick={() => {
+              setLang('en');
+              stopSpeaking();
+            }}
+          >
+            English
+          </button>
+          <button 
+            type="button" 
+            className={`lang-btn ${lang === 'ml' ? 'active' : ''}`}
+            onClick={() => {
+              setLang('ml');
+              stopSpeaking();
+            }}
+          >
+            മലയാളം
+          </button>
+          <button 
+            type="button" 
+            className={`lang-btn ${lang === 'hi' ? 'active' : ''}`}
+            onClick={() => {
+              setLang('hi');
+              stopSpeaking();
+            }}
+          >
+            हिन्दी
+          </button>
+        </div>
       </div>
     </header>
   );
@@ -662,7 +692,7 @@ export default function Home() {
   };
 
   return (
-    <main className="app-container">
+    <main className={`app-container ${largeText ? 'large-text-mode' : ''}`}>
       {!result ? renderHome() : renderResult()}
     </main>
   );

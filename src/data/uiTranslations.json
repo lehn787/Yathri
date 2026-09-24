@@ -49,7 +49,9 @@
     "voiceTipDesc": "Tap the mic and speak naturally: 'Take me from Thrippunithura to Infopark' or 'Thrippunithura il ninnu Infopark ilekku pokanam'",
     "mvdRuleTitle": "Kerala MVD Fare Policy",
     "mvdRuleDesc": "Fares are calculated using published Kerala MVD stage carriage rules (Base ₹10 for 2.5 km + ₹1.00/km).",
-    "totalStopsLabel": "Total Stops"
+    "totalStopsLabel": "Total Stops",
+    "largeText": "Large Text",
+    "textNormal": "Standard"
   },
   "ml": {
     "appTitle": "യാത്രി",
@@ -101,7 +103,9 @@
     "voiceTipDesc": "മൈക്രോഫോൺ ടാപ്പ് ചെയ്ത് സംസാരിക്കുക: 'തൃപ്പൂണിത്തുറയിൽ നിന്ന് ഇൻഫോപാർക്കിലേക്ക് പോകണം' അല്ലെങ്കിൽ 'Thrippunithura il ninnu Infopark ilekku pokanam'",
     "mvdRuleTitle": "കേരള എംവിഡി നിരക്ക് മാനദണ്ഡം",
     "mvdRuleDesc": "കേരള സർക്കാരിന്റെ ഔദ്യോഗിക സ്റ്റേജ് കാര്യേജ് മാനദണ്ഡപ്രകാരമാണ് ഏകദേശ നിരക്ക് (2.5 കി.മീ വരെ ₹10, പിന്നീട് ₹1/കി.മീ).",
-    "totalStopsLabel": "ആകെ സ്റ്റോപ്പുകൾ"
+    "totalStopsLabel": "ആകെ സ്റ്റോപ്പുകൾ",
+    "largeText": "വലിയ അക്ഷരം",
+    "textNormal": "സാധാരണ"
   },
   "hi": {
     "appTitle": "यात्री",
@@ -153,6 +157,8 @@
     "voiceTipDesc": "माइक दबाएं और बोलें: 'मुझे त्रिप्पुनिथुरा से इन्फोपार्क जाना है' या 'Thrippunithura se Infopark jana hai'",
     "mvdRuleTitle": "केरल एमवीडी किराया नियम",
     "mvdRuleDesc": "सरकारी स्टेज कैरिज नियमों (2.5 किमी तक ₹10 + ₹1.00/किमी) के आधार पर किराया अनुमान।",
-    "totalStopsLabel": "कुल स्टॉप"
+    "totalStopsLabel": "कुल स्टॉप",
+    "largeText": "बड़ा टेक्स्ट",
+    "textNormal": "सामान्य"
   }
 }

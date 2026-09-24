@@ -670,3 +670,134 @@ body {
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+/* Accessibility / Large Text Mode Toggle & Scaling */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.access-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.access-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.access-btn.active {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #60a5fa;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* Large Text Mode Styles */
+.large-text-mode {
+  font-size: 1.15rem;
+}
+
+.large-text-mode .title {
+  font-size: clamp(2.4rem, 5vw, 3.25rem);
+}
+
+.large-text-mode .subtitle {
+  font-size: 1.15rem;
+}
+
+.large-text-mode .input-label {
+  font-size: 1.05rem;
+}
+
+.large-text-mode .input-field {
+  font-size: 1.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.large-text-mode .btn-primary {
+  font-size: 1.25rem;
+  padding: 1.1rem;
+}
+
+.large-text-mode .btn-secondary {
+  font-size: 1.15rem;
+  padding: 0.95rem;
+}
+
+.large-text-mode .chip {
+  font-size: 1.05rem;
+  padding: 0.55rem 1rem;
+}
+
+.large-text-mode .voice-btn {
+  width: 72px;
+  height: 72px;
+}
+
+.large-text-mode .voice-btn svg {
+  width: 32px;
+  height: 32px;
+}
+
+.large-text-mode .voice-status-text {
+  font-size: 1.2rem;
+}
+
+.large-text-mode .metric-label {
+  font-size: 1.05rem;
+}
+
+.large-text-mode .metric-val {
+  font-size: 1.95rem !important;
+}
+
+.large-text-mode .metric-sub {
+  font-size: 0.95rem;
+}
+
+.large-text-mode .stop-timeline-item {
+  font-size: 1.2rem;
+  padding-left: 1.85rem;
+  margin-bottom: 1rem;
+}
+
+.large-text-mode .stop-timeline-item::before {
+  width: 14px;
+  height: 14px;
+}
+
+.large-text-mode .stop-timeline-item:not(:last-child)::after {
+  left: 0.65rem;
+}
+
+.large-text-mode .info-card p,
+.large-text-mode .info-card li {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.large-text-mode .card-title {
+  font-size: 1.35rem;
+}
+
+.large-text-mode .lang-btn {
+  font-size: 1.05rem;
+  padding: 0.55rem 1.1rem;
+}
+
