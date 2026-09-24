@@ -4,8 +4,8 @@ import path from 'path';
 import { loadGTFS } from '../engine/routeEngine';
 import { findJourney, JourneyResult } from '../engine/journeyEngine';
 import { loadFareEngine, estimateFare, FareResult } from '../engine/fareEngine';
-
-import { loadLanguageEngine, resolveStopName, parseJourneySentence, getLocalizedStopName, generateSpokenSummary } from '../engine/languageEngine';
+import { loadLanguageEngine, getLocalizedStopName, generateSpokenSummary } from '../engine/languageEngine';
+import { parseJourneyIntent, resolveStopToken } from '../engine/journeyIntentParser';
 
 // Ensure data is loaded once
 let enginesLoaded = false;
@@ -28,6 +28,10 @@ export interface SearchResponse {
     journey?: JourneyResult;
     fare?: FareResult;
     spokenSummary?: string;
+    extractedStops?: {
+        origin: string;
+        destination: string;
+    };
     localized?: {
         boardingStop: string;
         destinationStop: string;
@@ -41,37 +45,44 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
     let originQuery = originInput ? originInput.trim() : '';
     let destQuery = destInput ? destInput.trim() : '';
 
-    // If destination is empty, check if origin is a single sentence like "Thrippunithura to Infopark"
+    let canonicalOrigin: string | null = null;
+    let canonicalDest: string | null = null;
+
+    // 1. Single-sentence / Voice transcript input mode
     if (!destQuery && originQuery) {
-        const parsed = parseJourneySentence(originQuery);
-        if (parsed) {
-            originQuery = parsed.originRaw;
-            destQuery = parsed.destRaw;
+        const intent = parseJourneyIntent(originQuery);
+        if (!intent.success || !intent.canonicalOrigin || !intent.canonicalDestination) {
+            return {
+                success: false,
+                error: intent.error || "I couldn't identify the boarding or destination stop."
+            };
         }
-    }
+        canonicalOrigin = intent.canonicalOrigin;
+        canonicalDest = intent.canonicalDestination;
+    } else {
+        // 2. Separate From / To input mode
+        if (!originQuery) {
+            return { success: false, error: 'Please enter a starting stop.' };
+        }
+        if (!destQuery) {
+            return { success: false, error: 'Please enter a destination stop.' };
+        }
 
-    if (!originQuery) {
-        return { success: false, error: 'Please enter a starting stop.' };
-    }
-    if (!destQuery) {
-        return { success: false, error: 'Please enter a destination stop.' };
-    }
+        canonicalOrigin = resolveStopToken(originQuery);
+        if (!canonicalOrigin) {
+            return {
+                success: false,
+                error: `Unknown stop: ${originQuery}`
+            };
+        }
 
-    // Resolve canonical stop names
-    const canonicalOrigin = resolveStopName(originQuery);
-    if (!canonicalOrigin) {
-        return {
-            success: false,
-            error: `Unknown stop: ${originQuery}`
-        };
-    }
-
-    const canonicalDest = resolveStopName(destQuery);
-    if (!canonicalDest) {
-        return {
-            success: false,
-            error: `Unknown stop: ${destQuery}`
-        };
+        canonicalDest = resolveStopToken(destQuery);
+        if (!canonicalDest) {
+            return {
+                success: false,
+                error: `Unknown stop: ${destQuery}`
+            };
+        }
     }
 
     // Call deterministic route engine with canonical stop names
@@ -86,7 +97,7 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
     // Calculate fare
     const fare = estimateFare(journey);
 
-    // Optional localized stops for UI
+    // Localized stops for UI
     const localized = {
         boardingStop: getLocalizedStopName(journey.boardingStop || canonicalOrigin, lang),
         destinationStop: getLocalizedStopName(journey.destinationStop || canonicalDest, lang),
@@ -105,6 +116,10 @@ export async function searchJourneyAction(originInput: string, destInput?: strin
         journey,
         fare,
         spokenSummary,
+        extractedStops: {
+            origin: canonicalOrigin,
+            destination: canonicalDest
+        },
         localized
     };
 }

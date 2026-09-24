@@ -145,18 +145,27 @@ export default function Home() {
     setVoiceState('processing');
     setLoading(true);
     setVoiceError(null);
+    setSpokenInput(speechQuery);
 
     searchJourneyAction(speechQuery, '', lang)
       .then(res => {
-        setResult(res);
-        setVoiceState('idle');
-        if (res.success && res.spokenSummary) {
-          speakText(res.spokenSummary);
+        if (res.success && res.extractedStops) {
+          setOrigin(localizeStop(res.extractedStops.origin));
+          setDest(localizeStop(res.extractedStops.destination));
+          setResult(res);
+          setVoiceState('idle');
+          if (res.spokenSummary) {
+            speakText(res.spokenSummary);
+          }
+        } else {
+          // If extraction fails, do NOT run route engine; show clear retry option
+          setVoiceState('error');
+          setVoiceError(res.error || t.cantIdentify);
         }
       })
       .catch(() => {
-        setResult({ success: false, error: t.errorGeneric });
-        setVoiceState('idle');
+        setVoiceState('error');
+        setVoiceError(t.cantIdentify);
       })
       .finally(() => {
         setLoading(false);
@@ -195,7 +204,6 @@ export default function Home() {
       recognition.onresult = (event: any) => {
         const transcript = event.results[0]?.[0]?.transcript;
         if (transcript) {
-          setSpokenInput(transcript);
           handleVoiceSearch(transcript);
         }
       };
@@ -338,11 +346,23 @@ export default function Home() {
               {voiceState === 'listening' && t.micListening}
               {voiceState === 'processing' && t.micProcessing}
               {voiceState === 'idle' && t.micIdle}
-              {voiceState === 'error' && (voiceError || t.errorGeneric)}
+              {voiceState === 'error' && (voiceError || t.cantIdentify)}
             </div>
 
-            {spokenInput && (
+            {voiceState === 'error' && (
+              <button 
+                type="button" 
+                className="chip" 
+                style={{ marginTop: '0.75rem', background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}
+                onClick={startListening}
+              >
+                🔄 {t.tapToRetry}
+              </button>
+            )}
+
+            {spokenInput && voiceState !== 'error' && (
               <div className="recognized-bubble">
+                <span style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block' }}>{t.youSaid}:</span>
                 "{spokenInput}"
               </div>
             )}
@@ -458,7 +478,7 @@ export default function Home() {
       );
     }
 
-    const { journey, fare, spokenSummary } = result;
+    const { journey, fare, spokenSummary, extractedStops } = result;
     const boardingDisplay = localizeStop(journey?.boardingStop);
     const destinationDisplay = localizeStop(journey?.destinationStop);
     const routeDisplay = localizeRoute(journey?.routeName);
@@ -553,9 +573,21 @@ export default function Home() {
             </div>
 
             {spokenInput && (
-              <div className="recognized-bubble" style={{ marginBottom: '1.25rem' }}>
-                <span style={{ opacity: 0.7, fontSize: '0.75rem', display: 'block' }}>{t.spokenSentenceLabel}:</span>
-                "{spokenInput}"
+              <div className="spoken-transcript-card" style={{ marginBottom: '1.25rem' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" x2="12" y1="19" y2="22" />
+                </svg>
+                <div style={{ width: '100%' }}>
+                  <span style={{ opacity: 0.8, fontSize: '0.8rem', display: 'block' }}>{t.youSaid}:</span>
+                  <div style={{ fontWeight: 600, color: '#fff', marginBottom: '0.25rem' }}>"{spokenInput}"</div>
+                  {extractedStops && (
+                    <div style={{ fontSize: '0.8rem', color: '#93c5fd' }}>
+                      {t.from}: <strong>{localizeStop(extractedStops.origin)}</strong> &bull; {t.to}: <strong>{localizeStop(extractedStops.destination)}</strong>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
