@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { stops } from './routeEngine';
+import stopTranslationsJson from '../data/stopTranslations.json';
 
 export interface StopTranslationEntry {
     canonical: string;
@@ -13,7 +14,7 @@ export interface StopTranslationsData {
     stops: StopTranslationEntry[];
 }
 
-let translationsData: StopTranslationsData | null = null;
+let translationsData: StopTranslationsData | null = stopTranslationsJson as unknown as StopTranslationsData;
 const aliasToCanonicalMap: Map<string, string> = new Map();
 
 function cleanText(text: string): string {
@@ -21,22 +22,8 @@ function cleanText(text: string): string {
 }
 
 export function loadLanguageEngine(): void {
-    const candidatePaths = [
-        path.join(process.cwd(), 'src/data/stopTranslations.json'),
-        path.join(process.cwd(), 'data/stopTranslations.json'),
-        path.join(__dirname, '../data/stopTranslations.json'),
-        path.join(__dirname, '../../src/data/stopTranslations.json')
-    ];
-
-    for (const p of candidatePaths) {
-        if (fs.existsSync(p)) {
-            try {
-                translationsData = JSON.parse(fs.readFileSync(p, 'utf-8'));
-                break;
-            } catch (e) {
-                // Try next candidate
-            }
-        }
+    if (!translationsData) {
+        translationsData = stopTranslationsJson as unknown as StopTranslationsData;
     }
 
     aliasToCanonicalMap.clear();
