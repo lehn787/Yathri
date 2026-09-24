@@ -69,8 +69,21 @@ const testSpokenJourneys = [
   'Vazhakkala to Edappally'
 ];
 
-console.log('\n--- TESTING SPOKEN JOURNEY PHRASES ---');
+console.log('\n--- TESTING SPOKEN JOURNEY PHRASES & ROUTE ENGINE ---');
+import { findJourney } from '../src/engine/journeyEngine';
+import { estimateFare } from '../src/engine/fareEngine';
+import { loadFareEngine } from '../src/engine/fareEngine';
+
+loadFareEngine(path.join(process.cwd(), 'data/gtfs'));
+
 for (const j of testSpokenJourneys) {
   const res = parseJourneyIntent(j);
-  console.log(`${j.padEnd(45)} => ${res.success ? `${res.canonicalOrigin} -> ${res.canonicalDestination}` : `❌ ${res.error}`}`);
+  if (res.success && res.canonicalOrigin && res.canonicalDestination) {
+    const journey = findJourney(res.canonicalOrigin, res.canonicalDestination);
+    const fare = estimateFare(journey);
+    console.log(`${j.padEnd(45)} => ${res.canonicalOrigin} -> ${res.canonicalDestination} | Route: ${journey.success ? `${journey.routeName} (${journey.stops?.length} stops, ₹${fare.estimatedFare})` : `Direct trip unavailable`}`);
+  } else {
+    console.log(`${j.padEnd(45)} => ❌ ${res.error}`);
+  }
 }
+
